@@ -1,0 +1,77 @@
+ConsultIT Solution - CONTRAT DE LICENCE UTILISATEUR FINAL
+LICENCE DU SERVICE NEXTCLOUD
+
+Cette licence fait partie intégrante de la licence du socle ConsultIT Solution.
+Copyright (c) 2024 ConsultIT Solution. Tous droits réservés.
+
+1. DESCRIPTION DU SERVICE
+Le service Nextcloud fournit une instance cloud privée sécurisée avec :
+- Stockage et partage de fichiers
+- Édition collaborative via Collabora Online
+- Cache distribué avec Redis
+- Base de données PostgreSQL
+- Gestion automatisée des backups
+- Hooks de maintenance
+- Intégration Traefik pour la sécurité
+
+2. CONDITIONS SPÉCIFIQUES
+En plus des conditions générales définies dans la licence du socle :
+- L'utilisation de Nextcloud est soumise à la licence AGPL v3
+- L'utilisation de Collabora Online est soumise à sa licence respective
+- Les configurations de sécurité doivent être maintenues
+- Les performances doivent être surveillées
+- Les backups doivent être vérifiés régulièrement
+
+3. LIMITATIONS D'UTILISATION
+- Configuration réseau selon spécifications Nextcloud
+- Respect des bonnes pratiques de sécurité
+- Limitations de performance selon les ressources allouées
+- Conformité avec les standards de protection des données
+
+4. COMPOSANTS TIERS
+Ce service utilise les composants suivants :
+- Nextcloud (AGPL v3)
+- Collabora Online (MPL 2.0)
+- PostgreSQL (PostgreSQL License)
+- Redis (BSD License)
+- Apache (Apache License 2.0)
+Les licences complètes sont disponibles dans le dossier THIRD-PARTY-LICENSES.
+
+5. CONFIGURATION REQUISE
+- Domaines valides pour Nextcloud et Collabora
+- Configuration réseau appropriée
+- Ressources serveur minimales :
+  * 4GB RAM minimum (8GB recommandé)
+  * 2 vCPUs minimum (4 vCPUs recommandé)
+  * 20GB espace disque minimum
+  * Bande passante adaptée au nombre d'utilisateurs
+
+6. SUPPORT ET MAINTENANCE
+6.1 Installation initiale :
+- Configuration initiale sécurisée (Traefik, SSL)
+- Protection contre les attaques courantes
+- Documentation de base fournie
+- Configuration des backups automatiques
+
+6.2 Post-installation :
+- Aucun support technique inclus par défaut
+- Le client est responsable de la maintenance quotidienne
+- Un contrat de maintenance distinct peut être souscrit :
+  * Sous réserve de disponibilité
+  * Selon une tarification spécifique
+  * Via un contrat séparé
+
+6.3 Responsabilités du client :
+- Gestion des utilisateurs et des accès
+- Surveillance des performances
+- Gestion des backups
+- Maintenance courante
+- Respect des bonnes pratiques de sécurité
+
+7. RÉSILIATION
+La résiliation est soumise aux conditions du socle ConsultIT Solution.
+Les données peuvent être exportées selon les conditions suivantes :
+- Export complet de la base de données
+- Export du filestore
+- Export des configurations personnalisées
+- Possibilité de récupérer jusqu'à 7 jours de backups

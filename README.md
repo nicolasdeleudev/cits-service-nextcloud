@@ -1,83 +1,84 @@
-# Service Nextcloud
+# Service Nextcloud - ConsultIT Solution
 
-Ce service fournit une instance Nextcloud intégrée à l'infrastructure CITS.
+Service de cloud privé sécurisé basé sur Nextcloud, avec support Collabora Online, Redis pour le cache, PostgreSQL, backups automatisés et intégration Traefik. Compatible socle CITS.
 
-## Fonctionnalités
+## 🚀 Fonctionnalités
 
-- Stockage de fichiers sécurisé
-- Synchronisation multi-appareils
-- Partage de fichiers
-- Calendrier (CalDAV) et contacts (CardDAV)
-- Édition collaborative de documents
-- Galerie photos
-- Visioconférence
+- Instance Nextcloud sécurisée avec support SSL
+- Édition collaborative avec Collabora Online
+- Cache Redis pour les performances optimales
+- Base de données PostgreSQL
+- Backups automatisés avec hooks de maintenance
+- Intégration SMTP pour les notifications
+- Protection contre les attaques via Traefik
+- Monitoring et métriques
 
-## Architecture
+## 📋 Prérequis
 
-- **Base de données** : PostgreSQL 16
-- **Serveur Web** : Apache avec support reverse proxy
-- **Stockage** : Volumes Docker persistants
-- **Proxy** : Traefik avec SSL/TLS
-- **Hooks** : Scripts de personnalisation pre/post installation et mise à jour
+- Socle CITS installé et configuré
+- Domaine et sous-domaine valides pour Nextcloud et Collabora
+- Minimum 4GB RAM (8GB recommandé)
+- 20GB d'espace disque minimum
 
-## Configuration
+## ⚙️ Configuration
 
-### Variables d'environnement
-
-Voir le fichier `.env.nextcloud` pour la liste complète des variables disponibles.
-
-### Volumes
-
-- `/var/www/html` : Installation Nextcloud
-- `/var/www/html/data` : Données utilisateurs
-- `/var/www/html/custom_apps` : Applications personnalisées
-- `/var/www/html/config` : Configuration
-- `/var/www/html/themes` : Thèmes personnalisés
-
-### Hooks
-
-Cinq points d'extension sont disponibles :
-- `pre-installation` : Avant l'installation
-- `post-installation` : Après l'installation
-- `pre-upgrade` : Avant la mise à jour
-- `post-upgrade` : Après la mise à jour
-- `before-starting` : Avant chaque démarrage
-
-## Utilisation
-
-### Installation
-
-1. Copiez les variables d'environnement nécessaires de `.env.nextcloud` vers `.env`
-2. Ajoutez `nextcloud` à la liste des services dans `SERVICES`
-3. Lancez l'installation avec `./run.sh`
-
-### Commandes utiles
-
-Accès à la ligne de commande Nextcloud (occ) :
+1. Variables d'environnement requises :
 ```bash
-docker exec --user www-data nextcloud php occ
+# Dans .env
+NEXTCLOUD_DB_PASSWORD=xxx        # Mot de passe PostgreSQL
+NEXTCLOUD_ADMIN_USER=xxx        # Utilisateur admin Nextcloud
+NEXTCLOUD_ADMIN_PASSWORD=xxx    # Mot de passe admin Nextcloud
+COLLABORA_ADMIN_USER=xxx        # Utilisateur admin Collabora
+COLLABORA_ADMIN_PASSWORD=xxx    # Mot de passe admin Collabora
+NEXTCLOUD_URL_ESCAPED=xxx       # URL Nextcloud échappée (ex: nextcloud\\.example\\.fr)
 ```
 
-### Maintenance
-
-Vérification de l'état :
+2. Configuration SMTP (optionnelle) :
 ```bash
-docker exec nextcloud curl -f http://localhost/status.php
+NEXTCLOUD_SMTP_HOST=xxx                   # Serveur SMTP
+NEXTCLOUD_SMTP_NAME=xxx                   # Utilisateur SMTP
+NEXTCLOUD_SMTP_PASSWORD=xxx               # Mot de passe SMTP
+NEXTCLOUD_MAIL_DOMAIN=xxx                # Domaine mail
 ```
 
-## Sécurité
+## 🛠 Utilisation
 
-- Accès HTTPS uniquement
-- Rate limiting configuré
-- Headers de sécurité activés
-- Reverse proxy sécurisé
-- Isolation des conteneurs
+### Installation initiale
+```bash
+# Démarrage des services
+./run.sh nextcloud
 
-## Sauvegarde
+# Vérification des logs
+docker logs -f nextcloud
+```
 
-Les volumes suivants doivent être sauvegardés :
-- `nextcloud-db-data`
-- `nextcloud-data`
-- `nextcloud-config`
-- `nextcloud-custom-apps`
-- `nextcloud-themes`
+
+### Backup/Restore
+```bash
+# Création d'un backup
+./cli.sh backup create nextcloud
+
+# Restauration
+./cli.sh backup restore <backup_dir> nextcloud
+```
+
+## 🔒 Sécurité
+
+- Certificats SSL automatiques via Let's Encrypt
+- Protection contre les attaques DDOS
+- Isolation réseau via Docker
+- Headers de sécurité préconfigurés
+- Rate limiting sur les endpoints sensibles
+- Scripts de maintenance automatisés
+
+## 📚 Documentation
+
+- [Guide de déploiement](docs/deployment.md)
+- [Configuration Collabora](docs/collabora.md)
+- [Maintenance](docs/maintenance.md)
+- [FAQ](docs/faq.md)
+
+## 📝 Licence
+
+Copyright © 2024 ConsultIT Solution. Tous droits réservés.
+Voir le fichier [LICENSE](LICENSE) pour plus de détails.
