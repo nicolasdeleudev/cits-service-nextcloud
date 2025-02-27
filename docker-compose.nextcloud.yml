@@ -1,0 +1,211 @@
+services:
+  traefik:
+    volumes:
+      - ${PROJECT_ROOT:-..}/services/nextcloud/traefik/dynamic:/etc/traefik/dynamic/nextcloud
+
+  nextcloud-redis:
+    container_name: nextcloud-redis
+    image: redis:7-alpine
+    depends_on:
+      traefik:
+        condition: service_healthy
+      static-server:
+        condition: service_started
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    environment:
+      - TZ=Europe/Paris
+    volumes:
+      - nextcloud-redis:/data
+    networks:
+      web:
+        ipv4_address: ${NEXTCLOUD_REDIS_IP}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
+
+  nextcloud-collabora:
+    container_name: nextcloud-collabora
+    image: collabora/code:latest
+    depends_on:
+      nextcloud:
+        condition: service_healthy
+      traefik:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Paris
+      - domain=${NEXTCLOUD_URL_ESCAPED}
+      - extra_params=--o:ssl.enable=false --o:ssl.termination=true
+      - dictionaries=fr
+      - username=${COLLABORA_ADMIN_USER}
+      - password=${COLLABORA_ADMIN_PASSWORD}
+      - SLEEPFORDEBUGGER=0
+    cap_add:
+      - MKNOD
+    networks:
+      web:
+        ipv4_address: ${NEXTCLOUD_COLLABORA_IP}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9980/hosting/capabilities"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "1"
+    labels:
+      # Configuration de base
+      - "traefik.enable=true"
+      - "traefik.http.routers.collabora.rule=Host(`collabora.${DOMAIN}`)"
+      - "traefik.http.routers.collabora.entrypoints=websecure"
+      - "traefik.http.routers.collabora.tls=true"
+      - "traefik.http.routers.collabora.tls.certresolver=letsencrypt"
+      - "traefik.http.services.collabora.loadbalancer.server.port=9980"
+      - "traefik.http.services.collabora.loadbalancer.serverstransport=transport@file"
+      
+      # Compression
+      - "traefik.http.middlewares.collabora-compress.compress=true"
+      - "traefik.http.middlewares.collabora-compress.compress.excludedContentTypes=image/png,image/jpeg,font/woff2"
+
+      # Chaînage final des middlewares
+      - "traefik.http.routers.collabora.middlewares=security-headers@file,collabora-compress,collabora-ratelimit@file,error-pages@file"
+
+  nextcloud-db:
+    container_name: nextcloud-db
+    image: postgres:17
+    depends_on:
+      traefik:
+        condition: service_healthy
+      static-server:
+        condition: service_started
+    environment:
+      - POSTGRES_DB=nextcloud-db
+      - POSTGRES_USER=nextcloud
+      - POSTGRES_PASSWORD=${NEXTCLOUD_DB_PASSWORD:-nextcloud_password}
+      - TZ=Europe/Paris
+    volumes:
+      - nextcloud-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      web:
+        ipv4_address: ${NEXTCLOUD_DB_IP}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "1"
+
+  nextcloud:
+    container_name: nextcloud
+    image: nextcloud:31.0-apache
+    depends_on:
+      nextcloud-db:
+        condition: service_healthy
+      nextcloud-redis:
+        condition: service_healthy
+      traefik:
+        condition: service_healthy
+    environment:
+      # Configuration de la base de données
+      - POSTGRES_HOST=nextcloud-db
+      - POSTGRES_DB=nextcloud-db
+      - POSTGRES_USER=nextcloud
+      - POSTGRES_PASSWORD=${NEXTCLOUD_DB_PASSWORD:-nextcloud_password}
+      # Configuration de l'administrateur
+      - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER:-admin}
+      - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD:-admin_password}
+      # Configuration statique
+      - NEXTCLOUD_UPDATE=1
+      - APACHE_DISABLE_REWRITE_IP=1
+      - NEXTCLOUD_INIT_HTACCESS=true
+      # Configuration dynamique du proxy
+      - TRUSTED_PROXIES=${TRAEFIK_IP}
+      - NEXTCLOUD_TRUSTED_DOMAINS=nextcloud.${DOMAIN}
+      # Configuration système
+      - TZ=Europe/Paris
+      # Configuration Redis
+      - REDIS_HOST=nextcloud-redis
+      - REDIS_HOST_PORT=6379
+      # Configuration SMTP
+      - SMTP_SECURE=tls
+      - SMTP_PORT=587
+      - SMTP_HOST=${NEXTCLOUD_SMTP_HOST:-}
+      - SMTP_NAME=${NEXTCLOUD_SMTP_NAME:-}
+      - SMTP_PASSWORD=${NEXTCLOUD_SMTP_PASSWORD:-}
+      - MAIL_FROM_ADDRESS=cloud-notify
+      - MAIL_DOMAIN=${NEXTCLOUD_MAIL_DOMAIN:-}
+    volumes:
+      - nextcloud-html:/var/www/html
+      - ${PROJECT_ROOT:-..}/services/nextcloud/hooks/pre-installation:/docker-entrypoint-hooks.d/pre-installation:ro
+      - ${PROJECT_ROOT:-..}/services/nextcloud/hooks/post-installation:/docker-entrypoint-hooks.d/post-installation:ro
+      - ${PROJECT_ROOT:-..}/services/nextcloud/hooks/pre-upgrade:/docker-entrypoint-hooks.d/pre-upgrade:ro
+      - ${PROJECT_ROOT:-..}/services/nextcloud/hooks/post-upgrade:/docker-entrypoint-hooks.d/post-upgrade:ro
+      - ${PROJECT_ROOT:-..}/services/nextcloud/hooks/before-starting:/docker-entrypoint-hooks.d/before-starting:ro
+    restart: unless-stopped
+    networks:
+      web:
+        ipv4_address: ${NEXTCLOUD_IP}
+    labels:
+      # Configuration de base
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.${DOMAIN}`)"
+      - "traefik.http.routers.nextcloud.entrypoints=websecure"
+      - "traefik.http.routers.nextcloud.tls=true"
+      - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.nextcloud.service=nextcloud"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+      - "traefik.http.services.nextcloud.loadbalancer.serverstransport=transport@file"
+
+      # Headers pour le mode proxy
+      - "traefik.http.middlewares.nextcloud-headers.headers.customrequestheaders.X-Forwarded-Host=nextcloud.${DOMAIN}"
+      - "traefik.http.middlewares.nextcloud-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      
+      # Compression
+      - "traefik.http.middlewares.nextcloud-compress.compress=true"
+      - "traefik.http.middlewares.nextcloud-compress.compress.excludedContentTypes=image/png,image/jpeg,font/woff2"
+
+      # Configuration CalDAV/CardDAV
+      - "traefik.http.middlewares.nextcloud-redirectregex.redirectregex.permanent=true"
+      - "traefik.http.middlewares.nextcloud-redirectregex.redirectregex.regex=/.well-known/(card|cal)dav"
+      - "traefik.http.middlewares.nextcloud-redirectregex.redirectregex.replacement=/remote.php/dav/"
+
+      # Chaînage final des middlewares
+      - "traefik.http.routers.nextcloud.middlewares=nextcloud-headers,security-headers@file,nextcloud-compress,nextcloud-redirectregex,nextcloud-ratelimit@file,error-pages@file"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/status.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+        compress: "true"
+
+volumes:
+  nextcloud-db-data:
+    name: nextcloud-db-data
+  nextcloud-html:
+    name: nextcloud-html
+  nextcloud-redis:
+    name: nextcloud-redis

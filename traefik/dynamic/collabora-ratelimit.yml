@@ -1,0 +1,7 @@
+http:
+  middlewares:
+    collabora-ratelimit:
+      ratelimit:
+        average: 500
+        burst: 200
+        period: 1m 

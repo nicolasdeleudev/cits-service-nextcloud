@@ -1,0 +1,19 @@
+services:
+
+  nextcloud-redis:
+    depends_on:
+      traefik:
+        condition: service_healthy
+      static-server:
+        condition: service_started
+      cadvisor:
+        condition: service_healthy
+
+  nextcloud-db:
+    depends_on:
+      traefik:
+        condition: service_healthy
+      static-server:
+        condition: service_started
+      cadvisor:
+        condition: service_healthy

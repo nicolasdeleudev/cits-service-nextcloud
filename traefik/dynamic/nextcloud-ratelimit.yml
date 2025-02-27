@@ -1,0 +1,7 @@
+http:
+  middlewares:
+    nextcloud-ratelimit:
+      ratelimit:
+        average: 500
+        burst: 200
+        period: 1m 
