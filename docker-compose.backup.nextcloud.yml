@@ -1,0 +1,43 @@
+services:
+  nextcloud_backup:
+    image: postgres:17
+    profiles: 
+      - backup
+    volumes:
+      - ${PROJECT_ROOT:-..}/services/nextcloud/utils/manage_backup/backup.sh:/scripts/backup.sh:ro
+      - ${PROJECT_ROOT:-..}/workdir/tmp/backup/nextcloud:/backup_tmp
+      # Volumes à sauvegarder
+      - nextcloud-db-data:/var/lib/postgresql/data
+      - nextcloud-config:/nextcloud/config
+      - nextcloud-data:/nextcloud/data
+      - nextcloud-themes:/nextcloud/themes
+    networks:
+      web:
+        ipv4_address: ${BACKUP_NEXTCLOUD_IP}
+    environment:
+      - TZ=Europe/Paris
+      - DB_HOST=nextcloud-db
+      - DB_USER=nextcloud
+      - PGPASSWORD=${NEXTCLOUD_DB_PASSWORD}
+      - DB_NAME=nextcloud-db
+    entrypoint: ["/scripts/backup.sh"]
+
+networks:
+  web:
+    name: cits_web
+    external: true
+
+volumes:
+  nextcloud-db-data:
+    name: nextcloud-db-data
+    external: true
+  nextcloud-config:
+    name: nextcloud-config
+    external: true
+  nextcloud-data:
+    name: nextcloud-data
+    external: true
+  nextcloud-themes:
+    name: nextcloud-themes
+    external: true
+

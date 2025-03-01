@@ -7,9 +7,9 @@ WORKDIR="${PROJECT_ROOT}/workdir"
 
 # Structure pour Nextcloud
 PATHS=(
-    # Dossiers principaux du mailserver
-    "nextcloud/data"      # Données Nextcloud (exemple, a modifier)
-    "nextcloud/config"         # Configurations (exemple, a modifier)
+    "nextcloud/custom_apps"
+    "tmp/backup/nextcloud"
+    "tmp/restore/nextcloud"
 )
 
 # Création des répertoires

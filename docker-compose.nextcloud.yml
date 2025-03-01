@@ -148,12 +148,16 @@ services:
       - SMTP_SECURE=tls
       - SMTP_PORT=587
       - SMTP_HOST=${NEXTCLOUD_SMTP_HOST:-}
-      - SMTP_NAME=${NEXTCLOUD_SMTP_NAME:-}
+      - SMTP_NAME=${NEXTCLOUD_SMTP_ALIAS}@${NEXTCLOUD_MAIL_DOMAIN}
       - SMTP_PASSWORD=${NEXTCLOUD_SMTP_PASSWORD:-}
       - MAIL_FROM_ADDRESS=cloud-notify
       - MAIL_DOMAIN=${NEXTCLOUD_MAIL_DOMAIN:-}
     volumes:
       - nextcloud-html:/var/www/html
+      - nextcloud-config:/var/www/html/config
+      - nextcloud-data:/var/www/html/data
+      - nextcloud-themes:/var/www/html/themes
+      - ${PROJECT_ROOT:-..}/workdir/nextcloud/custom_apps:/var/www/html/custom_apps
       - ${PROJECT_ROOT:-..}/services/nextcloud/hooks/pre-installation:/docker-entrypoint-hooks.d/pre-installation:ro
       - ${PROJECT_ROOT:-..}/services/nextcloud/hooks/post-installation:/docker-entrypoint-hooks.d/post-installation:ro
       - ${PROJECT_ROOT:-..}/services/nextcloud/hooks/pre-upgrade:/docker-entrypoint-hooks.d/pre-upgrade:ro
@@ -207,5 +211,11 @@ volumes:
     name: nextcloud-db-data
   nextcloud-html:
     name: nextcloud-html
+  nextcloud-config:
+    name: nextcloud-config
+  nextcloud-data:
+    name: nextcloud-data
+  nextcloud-themes:
+    name: nextcloud-themes
   nextcloud-redis:
     name: nextcloud-redis

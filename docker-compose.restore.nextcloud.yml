@@ -1,0 +1,34 @@
+services:
+  nextcloud_restore:
+    image: postgres:17
+    profiles: 
+      - restore
+    volumes:
+      - ${PROJECT_ROOT:-..}/services/nextcloud/utils/manage_backup/restore.sh:/scripts/restore.sh:ro
+      - ${PROJECT_ROOT:-..}/workdir/tmp/restore/nextcloud:/restore_tmp
+      # Volumes à restaurer
+      - nextcloud-db-data:/var/lib/postgresql/data
+      - nextcloud-config:/nextcloud/config
+      - nextcloud-data:/nextcloud/data
+      - nextcloud-themes:/nextcloud/themes
+    environment:
+      - TZ=Europe/Paris
+      - DB_HOST=nextcloud-db
+      - DB_USER=nextcloud
+      - PGPASSWORD=${NEXTCLOUD_DB_PASSWORD}
+      - DB_NAME=nextcloud-db
+    entrypoint: ["/scripts/restore.sh"]
+
+volumes:
+  nextcloud-db-data:
+    name: nextcloud-db-data
+    external: true
+  nextcloud-config:
+    name: nextcloud-config
+    external: true
+  nextcloud-data:
+    name: nextcloud-data
+    external: true
+  nextcloud-themes:
+    name: nextcloud-themes
+    external: true
