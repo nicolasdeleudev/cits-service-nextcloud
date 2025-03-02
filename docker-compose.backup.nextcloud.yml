@@ -19,7 +19,7 @@ services:
       - DB_HOST=nextcloud-db
       - DB_USER=nextcloud
       - PGPASSWORD=${NEXTCLOUD_DB_PASSWORD}
-      - DB_NAME=nextcloud-db
+      - DB_NAME=nextcloud
     entrypoint: ["/scripts/backup.sh"]
 
 networks:

@@ -91,7 +91,7 @@ services:
       static-server:
         condition: service_started
     environment:
-      - POSTGRES_DB=nextcloud-db
+      - POSTGRES_DB=nextcloud
       - POSTGRES_USER=nextcloud
       - POSTGRES_PASSWORD=${NEXTCLOUD_DB_PASSWORD:-nextcloud_password}
       - TZ=Europe/Paris
@@ -102,7 +102,7 @@ services:
       web:
         ipv4_address: ${NEXTCLOUD_DB_IP}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U nextcloud"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -126,7 +126,7 @@ services:
     environment:
       # Configuration de la base de données
       - POSTGRES_HOST=nextcloud-db
-      - POSTGRES_DB=nextcloud-db
+      - POSTGRES_DB=nextcloud
       - POSTGRES_USER=nextcloud
       - POSTGRES_PASSWORD=${NEXTCLOUD_DB_PASSWORD:-nextcloud_password}
       # Configuration de l'administrateur
@@ -139,6 +139,7 @@ services:
       # Configuration dynamique du proxy
       - TRUSTED_PROXIES=${TRAEFIK_IP}
       - NEXTCLOUD_TRUSTED_DOMAINS=nextcloud.${DOMAIN}
+      - OVERWRITECLIURL=https://nextcloud.${DOMAIN}
       # Configuration système
       - TZ=Europe/Paris
       # Configuration Redis

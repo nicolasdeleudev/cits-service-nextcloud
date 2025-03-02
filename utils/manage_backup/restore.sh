@@ -8,7 +8,7 @@ NEXTCLOUD_USER=33
 NEXTCLOUD_GROUP=33
 
 # Vérification des variables d'environnement requises
-for var in DB_HOST DB_USER DB_NAME; do
+for var in POSTGRES_USER POSTGRES_DB PGPASSWORD; do
     if [ -z "${!var}" ]; then
         echo "❌ Erreur : La variable $var doit être définie"
         exit 1
@@ -31,24 +31,24 @@ if ! tar xzf "$BACKUP_FILE" -C "$RESTORE_TMP"; then
     exit 1
 fi
 
-# Vérification du fichier de base de données
+# Vérification des fichiers extraits
 if [ ! -f "$RESTORE_TMP/db.dump" ]; then
     echo "❌ Erreur : Fichier de base de données manquant dans l'archive"
     exit 1
 fi
 
 # Restauration de la base de données
-echo "💾 Restauration de la base de données PostgreSQL..."
-if ! pg_restore -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" --clean --if-exists "$RESTORE_TMP/db.dump"; then
+echo "💾 Restauration de la base de données..."
+if ! pg_restore -h localhost -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists "$RESTORE_TMP/db.dump"; then
     echo "⚠️ Attention : Des erreurs sont survenues pendant la restauration"
     echo "ℹ️ Ces erreurs sont normales si certaines tables n'existaient pas"
 fi
 
-# Restauration des données Nextcloud
+# Restauration des fichiers de configuration
 echo "📂 Restauration des fichiers de configuration..."
 if [ -f "$RESTORE_TMP/config.tar.gz" ]; then
-    rm -rf "${NEXTCLOUD_ROOT}/config"
-    mkdir -p "${NEXTCLOUD_ROOT}/config"
+    # Suppression du contenu sans supprimer le point de montage
+    find "${NEXTCLOUD_ROOT}/config" -mindepth 1 -delete
     if ! tar xzf "$RESTORE_TMP/config.tar.gz" -C "${NEXTCLOUD_ROOT}/config"; then
         echo "❌ Erreur lors de la restauration de la configuration"
         exit 1
@@ -58,10 +58,11 @@ else
     echo "⚠️ Attention : Pas de fichiers de configuration à restaurer"
 fi
 
+# Restauration des données utilisateurs
 echo "📂 Restauration des données utilisateurs..."
 if [ -f "$RESTORE_TMP/data.tar.gz" ]; then
-    rm -rf "${NEXTCLOUD_ROOT}/data"
-    mkdir -p "${NEXTCLOUD_ROOT}/data"
+    # Suppression du contenu sans supprimer le point de montage
+    find "${NEXTCLOUD_ROOT}/data" -mindepth 1 -delete
     if ! tar xzf "$RESTORE_TMP/data.tar.gz" -C "${NEXTCLOUD_ROOT}/data"; then
         echo "❌ Erreur lors de la restauration des données utilisateurs"
         exit 1
@@ -71,10 +72,11 @@ else
     echo "⚠️ Attention : Pas de données utilisateurs à restaurer"
 fi
 
+# Restauration des thèmes
 echo "📂 Restauration des thèmes..."
 if [ -f "$RESTORE_TMP/themes.tar.gz" ]; then
-    rm -rf "${NEXTCLOUD_ROOT}/themes"
-    mkdir -p "${NEXTCLOUD_ROOT}/themes"
+    # Suppression du contenu sans supprimer le point de montage
+    find "${NEXTCLOUD_ROOT}/themes" -mindepth 1 -delete
     if ! tar xzf "$RESTORE_TMP/themes.tar.gz" -C "${NEXTCLOUD_ROOT}/themes"; then
         echo "❌ Erreur lors de la restauration des thèmes"
         exit 1

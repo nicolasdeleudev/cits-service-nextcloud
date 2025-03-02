@@ -13,11 +13,10 @@ services:
       - nextcloud-themes:/nextcloud/themes
     environment:
       - TZ=Europe/Paris
-      - DB_HOST=nextcloud-db
-      - DB_USER=nextcloud
+      - POSTGRES_USER=nextcloud
       - PGPASSWORD=${NEXTCLOUD_DB_PASSWORD}
-      - DB_NAME=nextcloud-db
-    entrypoint: ["/scripts/restore.sh"]
+      - POSTGRES_DB=nextcloud
+    entrypoint: ["/bin/bash", "-c", "docker-entrypoint.sh postgres & sleep 5 && /scripts/restore.sh"]
 
 volumes:
   nextcloud-db-data:
