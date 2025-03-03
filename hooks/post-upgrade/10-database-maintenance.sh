@@ -7,8 +7,14 @@ echo "=== Maintenance post-mise à jour ==="
 php /var/www/html/occ maintenance:mode --on
 
 # Ajout des indices manquants
-echo "Optimisation de la base de données..."
+echo "Ajout des indices manquants..."
+php /var/www/html/occ db:add-missing-columns
 php /var/www/html/occ db:add-missing-indices
+php /var/www/html/occ db:add-missing-primary-keys
+
+# Réparation incluant les opérations coûteuses (migration des mimetypes)
+echo "Réparation et migration des mimetypes..."
+php /var/www/html/occ maintenance:repair --include-expensive
 
 # Configuration du système
 echo "Configuration du système..."
