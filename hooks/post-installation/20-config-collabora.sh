@@ -17,6 +17,12 @@ if [ -z "${BASE_DOMAIN}" ]; then
     exit 1
 fi
 
+# Configuration de PHP pour suivre les redirections avec cURL
+echo "🔧 Configuration de PHP pour suivre les redirections avec cURL..."
+php -r "ini_set('curl.cainfo', '/etc/ssl/certs/ca-certificates.crt'); ini_set('openssl.cafile', '/etc/ssl/certs/ca-certificates.crt');"
+# Définir la variable d'environnement pour que cURL suive les redirections
+export CURL_OPTS="-L"
+
 # Vérification si richdocuments est installé
 if ! php /var/www/html/occ app:list | grep -q "richdocuments"; then
     echo "🔧 Installation de Nextcloud Office..."
