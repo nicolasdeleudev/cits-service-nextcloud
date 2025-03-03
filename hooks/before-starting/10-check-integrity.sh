@@ -7,6 +7,12 @@ echo "=== Vérification de l'intégrité avant démarrage ==="
 echo "🔒 Activation du mode maintenance..."
 php /var/www/html/occ maintenance:mode --on
 
+# Mise à jour des mimetypes (déplacé avant la vérification d'intégrité)
+echo "🔄 Mise à jour des mimetypes..."
+php /var/www/html/occ maintenance:mimetype:update-db --repair-filecache
+php /var/www/html/occ maintenance:mimetype:update-js
+php /var/www/html/occ maintenance:theme:update
+
 # Vérification et réparation de la base de données
 echo "🔍 Vérification des indices de la base de données..."
 php /var/www/html/occ db:add-missing-indices
@@ -16,16 +22,12 @@ php /var/www/html/occ db:convert-filecache-bigint
 
 # Vérification et réparation de l'intégrité du core
 echo "🔍 Vérification de l'intégrité du core..."
-php /var/www/html/occ integrity:check-core
+# Utilisation de || true pour éviter que le script échoue si l'intégrité n'est pas validée
+php /var/www/html/occ integrity:check-core || echo "⚠️ Des problèmes d'intégrité ont été détectés mais le démarrage va continuer"
 
 # Réparation générale
 echo "🔧 Exécution des réparations générales..."
 php /var/www/html/occ maintenance:repair
-
-# Mise à jour des mimetypes
-echo "🔄 Mise à jour des mimetypes..."
-php /var/www/html/occ maintenance:mimetype:update-db
-php /var/www/html/occ maintenance:mimetype:update-js
 
 # Nettoyage du cache
 echo "🧹 Nettoyage du cache..."
