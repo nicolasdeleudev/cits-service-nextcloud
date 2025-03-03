@@ -11,7 +11,7 @@ if [ -z "${NEXTCLOUD_DOMAIN}" ]; then
 fi
 
 # Extraction du domaine de base
-BASE_DOMAIN=$(echo "$NEXTCLOUD_DOMAIN" | sed -E 's/^nextcloud\.//')
+BASE_DOMAIN=$(echo "$NEXTCLOUD_DOMAIN" | sed -E 's/^nxc\.//')
 if [ -z "${BASE_DOMAIN}" ]; then
     echo "❌ Erreur : Impossible d'extraire le domaine de base"
     exit 1
@@ -36,7 +36,7 @@ echo "🔧 Activation de Nextcloud Office..."
 php /var/www/html/occ app:enable richdocuments
 
 # Configuration de l'URL du serveur Collabora
-COLLABORA_URL="https://collabora.${BASE_DOMAIN}"
+COLLABORA_URL="https://collabora-nxc.${BASE_DOMAIN}"
 echo "🔧 Configuration de l'URL Collabora : $COLLABORA_URL"
 php /var/www/html/occ config:app:set richdocuments wopi_url --value="$COLLABORA_URL"
 

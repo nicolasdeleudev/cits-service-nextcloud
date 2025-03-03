@@ -68,7 +68,7 @@ services:
     labels:
       # Configuration de base
       - "traefik.enable=true"
-      - "traefik.http.routers.collabora.rule=Host(`collabora.${DOMAIN}`)"
+      - "traefik.http.routers.collabora.rule=Host(`collabora-nxc.${DOMAIN}`)"
       - "traefik.http.routers.collabora.entrypoints=websecure"
       - "traefik.http.routers.collabora.tls=true"
       - "traefik.http.routers.collabora.tls.certresolver=letsencrypt"
@@ -138,10 +138,10 @@ services:
       - NEXTCLOUD_INIT_HTACCESS=true
       # Configuration dynamique du proxy
       - TRUSTED_PROXIES=${TRAEFIK_IP}
-      - NEXTCLOUD_TRUSTED_DOMAINS=nextcloud.${DOMAIN}
-      - OVERWRITEHOST=nextcloud.${DOMAIN}
+      - NEXTCLOUD_TRUSTED_DOMAINS=nxc.${DOMAIN}
+      - OVERWRITEHOST=nxc.${DOMAIN}
       - OVERWRITEPROTOCOL=https
-      - OVERWRITECLIURL=https://nextcloud.${DOMAIN}
+      - OVERWRITECLIURL=https://nxc.${DOMAIN}
       # Configuration système
       - TZ=Europe/Paris
       # Configuration Redis
@@ -174,7 +174,7 @@ services:
     labels:
       # Configuration de base
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.${DOMAIN}`)"
+      - "traefik.http.routers.nextcloud.rule=Host(`nxc.${DOMAIN}`)"
       - "traefik.http.routers.nextcloud.entrypoints=websecure"
       - "traefik.http.routers.nextcloud.tls=true"
       - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
@@ -183,7 +183,7 @@ services:
       - "traefik.http.services.nextcloud.loadbalancer.serverstransport=transport@file"
 
       # Headers pour le mode proxy
-      - "traefik.http.middlewares.nextcloud-headers.headers.customrequestheaders.X-Forwarded-Host=nextcloud.${DOMAIN}"
+      - "traefik.http.middlewares.nextcloud-headers.headers.customrequestheaders.X-Forwarded-Host=nxc.${DOMAIN}"
       - "traefik.http.middlewares.nextcloud-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
       
       # Compression
