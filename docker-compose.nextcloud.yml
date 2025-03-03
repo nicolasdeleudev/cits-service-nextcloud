@@ -139,6 +139,8 @@ services:
       # Configuration dynamique du proxy
       - TRUSTED_PROXIES=${TRAEFIK_IP}
       - NEXTCLOUD_TRUSTED_DOMAINS=nextcloud.${DOMAIN}
+      - OVERWRITEHOST=nextcloud.${DOMAIN}
+      - OVERWRITEPROTOCOL=https
       - OVERWRITECLIURL=https://nextcloud.${DOMAIN}
       # Configuration système
       - TZ=Europe/Paris
@@ -164,6 +166,7 @@ services:
       - ${PROJECT_ROOT:-..}/services/nextcloud/hooks/pre-upgrade:/docker-entrypoint-hooks.d/pre-upgrade:ro
       - ${PROJECT_ROOT:-..}/services/nextcloud/hooks/post-upgrade:/docker-entrypoint-hooks.d/post-upgrade:ro
       - ${PROJECT_ROOT:-..}/services/nextcloud/hooks/before-starting:/docker-entrypoint-hooks.d/before-starting:ro
+      - ${PROJECT_ROOT:-..}/services/nextcloud/conf/opcache-recommended.ini:/usr/local/etc/php/conf.d/opcache-recommended.ini:ro
     restart: unless-stopped
     networks:
       web:
